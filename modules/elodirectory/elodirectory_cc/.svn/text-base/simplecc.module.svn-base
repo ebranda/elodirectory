@@ -1,0 +1,182 @@
+<?php
+
+/** 
+ * Implementation of hook_block(). 
+ */
+function simplecc_block($op = 'list', $delta = 0, $edit = array()) { 
+  switch ($op) { 
+    case 'list': 
+      $blocks[0]['info'] = t('CC node license');
+      $blocks[1]['info'] = t('CC site license');
+      return $blocks;  
+    case 'view':
+      switch ($delta) {
+        
+        // Node license
+        case 0:
+          if (arg(0) != 'node' || !is_numeric(arg(1))) {
+            return;
+          }
+          $node = node_load(arg(1));
+          if ($node) {
+            $license = simplecc_get_license($node);
+            $block['content'] = theme('cc_block_content', $license);
+            return $block;
+          }
+          return;
+
+        // Site license
+        case 1:
+          $license = simplecc_get_license();
+          $block['content'] = theme('cc_block_content', $license);
+          return $block;
+      }
+      break;
+  }
+}
+
+
+/**
+  * Implementation of hook_theme()
+  */
+function simplecc_theme() {
+ 	return array(
+    'cc_block_content' => array(
+      'arguments' => array('nid' => NULL),
+    ),
+ 	);
+}
+
+function simplecc_get_license($node = NULL) {
+  $cc = new StdClass();
+  $cc->scope = is_null($node) ? 'site' : 'node';    
+  $cc->work_title = $cc->scope == 'site' ? variable_get('site_name', '') : $node->title;
+  $cc->img_small = variable_get('simplecc_small_icon_html', '');
+  $cc->img_large = variable_get('simplecc_large_icon_html', '');
+  $cc->url = variable_get('simplecc_license_url', '');
+  $cc->name = variable_get('simplecc_license_name', '');
+  return $cc;
+}
+
+/** 
+ * Implementation of hook_form_alter()
+ *
+ * Automatically add an accept checkbox if the module settings specify it.
+ */
+function simplecc_form_alter(&$form, &$form_state, $form_id) {
+  if ($form['#id'] == 'node-form') {
+    $id_segments = explode('_', $form_id);
+    $node_type = $id_segments[0];
+    if (in_array($node_type, variable_get('simplecc_nodetypes', array()))) {
+      $license = simplecc_get_license();
+      $form['simplecc'] = array(
+        '#type' => 'checkbox',
+        '#weight' => 10000,
+        '#default_value' => is_null($form['nid']['#value']) ? 0 : 1,
+        '#title' => t('By posting this work I accept the terms of the Creative Commons license. <a href="@license_url" target="_blank">View license terms</a> (displays in new window).', array('@license_url'=>$license->url)),
+      );
+      $form['#validate'][] = 'simplecc_form_validate';
+    }
+  }
+}
+
+function simplecc_form_validate($form, &$form_state) {
+  if(!$form_state['values']['simplecc']) {
+    form_set_error('simplecc', t('You must accept the terms of the license to post work'));
+  }
+}
+
+/** 
+ * Implementation of hook_nodeapi(). 
+ */ 
+function simplecc_nodeapi(&$node, $op, $teaser, $page) { 
+	global $user;
+	switch ($op) {
+		case 'insert':
+		  $message = "The user $user->name [id=$user->uid] accepted the license terms for the new post $node->title [nid=$node->nid]";
+		  db_query("INSERT INTO {simplecc_accept} (uid, nid, created_at, message) VALUES($user->uid, $node->nid, NOW(), '$message')");
+			break;
+	}
+}
+
+/**
+ * Theme the Creative Commons license block content.
+ */
+function theme_cc_block_content($license) {
+  $output = '<div class="creativecommons">';
+  $output .= '<div class="license-icon">';
+  $output .= l($license->img_large, $license->url, array('html' => TRUE));
+  $output .= '</div>';
+  $output .= '<div class="license-details">';
+  $args = array(
+    '@work_title' => $license->work_title,
+    '@license_url' => $license->url,
+    '@license_name' => $license->name,
+  );
+  switch ($license->scope) {
+    case 'site':
+      $output .= t('This site, @work_title, and all its contents are licensed under a <a rel="license" href="@license_url">@license_name license</a>.', $args);
+      break;
+    case 'node':
+      $output .= t('This entry, @work_title, was posted under the terms of a <a rel="license" href="@license_url">@license_name</a>.', $args);
+      break;
+  }
+  $output .= '</div>';
+  $output .= '</div>';
+  return $output;
+}
+
+/** 
+ * Implementation of hook_menu()
+ */ 
+function simplecc_menu() { 
+  $items = array(); 
+  $items['admin/settings/simplecc'] = array(
+		'title' => t('CC license settings'), 
+		'description' => t('Change how CC licenses behave.'), 
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('simplecc_admin_settings_form'), 
+		'access arguments' => array('access administration menu'),
+		'type' => MENU_NORMAL_ITEM,
+	);
+  return $items; 
+}
+
+/**
+ * Define the form for module settings.
+ */
+function simplecc_admin_settings_form() { 
+	$form['simplecc_license_name'] = array( 
+		'#type' => 'textfield', 
+		'#size' => 60,
+		'#title' => t('Creative Commons license name'),
+		'#default_value' => variable_get('simplecc_license_name', ''),
+	); 
+	$form['simplecc_license_url'] = array( 
+		'#type' => 'textfield', 
+		'#size' => 60,
+		'#title' => t('Creative Commons license URL'),
+		'#default_value' => variable_get('simplecc_license_url', ''),
+	);
+	$form['simplecc_small_icon_html'] = array( 
+		'#type' => 'textfield', 
+		'#size' => 60,
+		'#title' => t('Small license icon HTML'),
+		'#default_value' => variable_get('simplecc_small_icon_html', ''),
+	);
+	$form['simplecc_large_icon_html'] = array( 
+		'#type' => 'textfield', 
+		'#size' => 60,
+		'#title' => t('Large license icon HTML'),
+		'#default_value' => variable_get('simplecc_large_icon_html', ''),
+	);
+	$form['simplecc_nodetypes'] = array( 
+		'#type' => 'checkboxes', 
+		'#title' => t('License should apply to the following node types'), 
+		'#options' => node_get_types('names'), 
+		'#default_value' => variable_get('simplecc_nodetypes', array()), 
+		'#description' => t('A license accept checkbox will be added to forms for these node types.'),
+	);
+	$form['array_filter'] = array('#type' => 'hidden'); 
+	return system_settings_form($form); 
+}

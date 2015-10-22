@@ -1,0 +1,59 @@
+<?php
+
+
+/** 
+ * Implementation of hook_block_info(). 
+ */
+function elodirectory_cc_block_info() { 
+	$blocks['license'] = array(
+	    'info' => t('CC site license'), 
+	  );
+	return $blocks;
+}
+
+/** 
+ * Implementation of hook_block_view(). 
+ */
+function elodirectory_cc_block_view($delta = '') { 
+	switch ($delta) {
+		case 0:
+			// TODO put these values in config variables
+			$license_text = '<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.';
+  			$output = '<div class="creativecommons">';
+			$output .= $license_text;
+			$output .= '</div>';
+			$block['content'] = $output;
+			$block['subject'] = ''; // Don't show a block title
+  			return $block;
+	}
+}
+
+/** 
+ * Implementation of hook_form_alter()
+ *
+ * Automatically add an accept checkbox if the module settings specify it.
+ */
+function elodirectory_cc_form_alter(&$form, &$form_state, $form_id) {
+	// TODO
+  /* if ($form['#id'] == 'node-form') {
+    $id_segments = explode('_', $form_id);
+    $node_type = $id_segments[0];
+    if (in_array($node_type, variable_get('simplecc_nodetypes', array()))) {
+      $license = simplecc_get_license();
+      $form['simplecc'] = array(
+        '#type' => 'checkbox',
+        '#weight' => 10000,
+        '#default_value' => is_null($form['nid']['#value']) ? 0 : 1,
+        '#title' => t('By posting this work I accept the terms of the Creative Commons license. <a href="@license_url" target="_blank">View license terms</a> (displays in new window).', array('@license_url'=>$license->url)),
+      );
+      $form['#validate'][] = 'simplecc_form_validate';
+    }
+  }
+*/
+}
+
+function elodirectory_cc_validate($form, &$form_state) {
+  if(!$form_state['values']['simplecc']) {
+    form_set_error('elodirectory_cc', t('You must accept the terms of the license to post work'));
+  }
+}

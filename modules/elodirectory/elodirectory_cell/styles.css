@@ -1,0 +1,8 @@
+
+/* CELL-modified search results page search form */
+form.search-form input.form-text { 
+	width:220px; 
+}
+form.search-form .form-wrapper {
+	display:inline;
+}

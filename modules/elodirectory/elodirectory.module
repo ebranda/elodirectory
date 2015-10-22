@@ -1,0 +1,49 @@
+<?php
+
+/**
+ * @file
+ * This module provides custom functionality for the ELD site.
+ */
+
+	
+	// Prefix the node body if the work is an antecedent???
+
+
+	/**
+	 * Implements hook_admin().
+	 */
+	function elodirectory_admin() {
+		$form = array();
+		$form['elodirectory_account_page_message'] = array(
+			'#type' => 'textarea',
+			'#title' => t('Account page header message'),
+			'#default_value' => variable_get('elodirectory_account_page_message', ''),
+			'#description' => t("The message to show to users without accounts."),
+		);
+		return system_settings_form($form);
+	}
+
+
+	/**
+	 * Implements hook_menu().
+	 */
+	function elodirectory_menu() {
+		$items = array();
+		$items['admin/config/elodirectory'] = array(
+			'title' => 'ELD settings',
+			'description' => 'Manage static messages for the ELD site.',
+			'page callback' => 'drupal_get_form',
+			'page arguments' => array('elodirectory_admin'),
+			'access arguments' => array('administer content'),
+			'type' => MENU_NORMAL_ITEM,
+		);
+		return $items;
+	}
+	
+	
+	/**
+	 * Implements hook_form_alter().
+	 */
+	function elodirectory_form_user_login_alter(&$form, &$form_state) {
+		$form['msg'] = array('#markup' => '<div class="annotation">'.variable_get('elodirectory_account_page_message', '').'</div>');
+	}

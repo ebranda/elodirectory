@@ -1,0 +1,4 @@
+name = Simple Creative Commons
+description = Provides basic CC licensing blocks
+package = Electronic Literature Organization
+core = 7.x

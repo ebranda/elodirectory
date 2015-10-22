@@ -1,0 +1,104 @@
+<?php
+
+/**
+ * Implements hook_views_pre_render().
+ * Formats field output prior to export to OAI-PMH.
+ */
+function elodirectory_cell_views_pre_render(&$view) {
+	//watchdog('oai', 'Called view');
+	if ($view->name == 'oai_pmh_for_cell') {
+		$results = $view->result; 
+		foreach ($results as $key => $result) {
+			_elodirectory_cell_format_author_field($view, $key, $result);
+			_elodirectory_cell_format_work_language_field($view, $key, $result);
+		}
+	}
+}
+
+/**
+ * Re-write the author name field using last, first format.
+ */
+function _elodirectory_cell_format_author_field(&$view, $result_key, $result) {
+	foreach ($result->field_field_author as $author_key => $author_field) {
+		$name = $author_field['rendered']['#markup'];
+		$tokens = explode(" ", $name);
+		$last_name = $tokens[sizeof($tokens)-1];
+		array_pop($tokens);
+		$first_names = implode(' ', $tokens);
+		$view->result[$result_key]->field_field_author[$author_key]['rendered']['#markup'] = "$last_name, $first_names";
+	}
+}
+
+/**
+ * Re-write the language field to use term field instead of term name.
+ * Should be able to do this in Views using aggregation and a relationship
+ * but Views is reporting a SQL error when we do so. See
+ * https://www.drupal.org/node/1704962
+ */
+function _elodirectory_cell_format_work_language_field(&$view, $result_key, $result) {
+	$languages = _load_languages();
+	foreach ($result->field_field_language as $language_key => $language_field) {
+		$name = $language_field['rendered']['#markup'];
+		$view->result[$result_key]->field_field_language[$language_key]['rendered']['#markup'] = $languages[$name];
+	}
+}
+
+function _load_languages() {
+	$languages = array();
+	$vocabulary = taxonomy_vocabulary_machine_name_load('language');
+	foreach (taxonomy_get_tree($vocabulary->vid, 0, 1, TRUE) as $term) {
+		$wrapper = entity_metadata_wrapper('taxonomy_term', $term);
+		$languages[$wrapper->name->value()] = $wrapper->field_iso_639_1_code->value();
+	}
+	return $languages;
+}
+
+
+/**
+ * Implements hook_form_search_form_alter().
+ * Adds a button to the search form displayed at top of search results page
+ * so that the same search can be executed on CELL engine.
+ */
+function elodirectory_cell_form_search_form_alter(&$form, &$form_state) {
+	$form['basic']['submit']['#value'] = 'Search again';
+	// Add a second submit button. Don't actually do anything because
+	// we want JS to simply open a new tab and call the CELL search.
+	$form['cell_search'] = array(
+     '#type' => 'button',
+     '#value' => t('Search CELL partner sites'),
+   );
+	$form['msg'] = array('#markup' => '<div class="annotation">'.variable_get('elodirectory_cell_cell_def', '').'</div>');
+	drupal_add_css(drupal_get_path('module', 'elodirectory_cell').'/styles.css');
+	drupal_add_js("window.cellSearchUrl='http://cellproject.net/search/site?search_api_views_fulltext=".arg(2)."'", 'inline');
+	drupal_add_js(drupal_get_path('module', 'elodirectory_cell').'/scripts.js');
+}
+
+/**
+ * Implements hook_menu().
+ */
+function elodirectory_cell_menu() {
+	$items = array();
+	$items['admin/config/elodirectory_cell'] = array(
+		'title' => 'ELD CELL',
+		'description' => 'Manage CELL integration for the ELD site.',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('elodirectory_cell_admin'),
+		'access arguments' => array('administer content'),
+		'type' => MENU_NORMAL_ITEM,
+	);
+	return $items;
+}
+
+/**
+ * Implements hook_admin().
+ */
+function elodirectory_cell_admin() {
+	$form = array();
+	$form['elodirectory_cell_cell_def'] = array(
+		'#type' => 'textarea',
+		'#title' => t('CELL Definition'),
+		'#default_value' => variable_get('elodirectory_cell_cell_def', ''),
+		'#description' => t("The message to show that defines the CELL project."),
+	);
+	return system_settings_form($form);
+}

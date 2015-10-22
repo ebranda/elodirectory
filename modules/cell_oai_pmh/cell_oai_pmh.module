@@ -1,0 +1,28 @@
+<?php
+
+/**
+ * @file
+ * The CELL OAI-PMH module.
+ */
+
+/**
+ * Implements hook_views_oai_pmh_format_alter().
+ *
+ * Adds extensions to the MODS format.
+ */
+function cell_oai_pmh_views_oai_pmh_metadata_format_alter(&$format) {
+  if ($format->id == 'mods') {
+    $format->namespaces['cell'] = 'http://cellproject.net/schemas/cell-mods-extension';
+    $format->root_attributes['xmlns:cell'] = $format->namespaces['cell'];
+
+    // Attributes.
+    $format->attributes['extension/cell:originInfo/cell:publisher'] = array('displayLabel', 'dateLastAccessed', 'note', 'access', 'usage', 'xlink:href', 'ID', 'lang', 'xml:lang', 'script', 'transliteration');
+    $format->attributes['extension/cell:recordInfo/name'] = array('type', 'authority', 'authorityURI', 'valueURI', 'usage', 'displayLabel', 'nameTitleGroup', 'altRepGroup', 'xlink:href', 'ID', 'lang', 'xml:lang', 'script', 'transliteration', 'etal');
+    $format->attributes['extension/cell:recordInfo/name/namePart'] = array('type', 'lang', 'xml:lang', 'script', 'transliteration');
+
+    // Elements.
+    $format->elements['extension/cell:originInfo/cell:publisher'] = t('(CELL) extension > cell:originInfo > cell:publisher');
+    $format->elements['extension/cell:recordInfo/name[]'] = t('(CELL) extension > cell:recordInfo > name (multiple)');
+    $format->elements['extension/cell:recordInfo/name[]/namePart'] = t('(CELL) extension > cell:recordInfo > name (multiple) > namePart');
+  }
+}

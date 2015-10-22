@@ -1,0 +1,4 @@
+name = ELD
+description = Provides custom functionality for the ELD site
+package = Electronic Literature Organization
+core = 7.x

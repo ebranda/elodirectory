@@ -1,0 +1,39 @@
+diff --git a/noderefcreate.info b/noderefcreate.info
+index c56dc1a..3a164b4 100644
+--- a/noderefcreate.info
++++ b/noderefcreate.info
+@@ -7,3 +7,10 @@ dependencies[] = references
+ dependencies[] = node_reference
+ 
+ files[] = noderefcreate.module
++
++; Information added by drupal.org packaging script on 2011-05-26
++version = "7.x-1.0"
++core = "7.x"
++project = "noderefcreate"
++datestamp = "1306453616"
++
+diff --git a/noderefcreate.module b/noderefcreate.module
+index 1985c90..61a09a4 100644
+--- a/noderefcreate.module
++++ b/noderefcreate.module
+@@ -85,8 +85,8 @@ function noderefcreate_field_widget_form(&$form, &$form_state, $field, $instance
+  * and we just create new node in case no node with provided title exists.
+  */
+ function noderefcreate_autocomplete_validate($element, &$form_state, $form) {
+-  $field = field_widget_field($element, $form_state);
+-  $instance = field_widget_instance($element, $form_state);
++  $field = $form_state['field'][$element['#field_name']][$element['#language']]['field'];
++  $instance = $form_state['field'][$element['#field_name']][$element['#language']]['instance'];
+ 
+   $value = $element['#value'];
+   $nid = NULL;
+@@ -127,7 +127,7 @@ function noderefcreate_autocomplete_validate($element, &$form_state, $form) {
+         $nid = key($reference);
+       }
+       else {
+-        $newnode = NULL;
++        $newnode = new stdClass();
+         if (is_array($field['settings']['referenceable_types'])) {
+           foreach (array_filter($field['settings']['referenceable_types']) as $related_type) {
+             $newnode->type = $related_type;

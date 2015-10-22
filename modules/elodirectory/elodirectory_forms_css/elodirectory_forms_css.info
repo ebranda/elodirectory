@@ -1,0 +1,4 @@
+name = ELD Forms CSS
+description = Provides a mechanism for adding CSS to forms. Currently only works for node edit forms.
+package = Electronic Literature Organization
+core = 7.x

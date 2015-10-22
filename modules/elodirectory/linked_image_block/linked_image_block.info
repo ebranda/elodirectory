@@ -1,0 +1,4 @@
+name = Linked image block
+description = Exposes a linked image as a block
+package = Electronic Literature Organization
+core = 7.x

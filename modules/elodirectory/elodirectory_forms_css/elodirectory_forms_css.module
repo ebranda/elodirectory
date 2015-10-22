@@ -1,0 +1,8 @@
+<?php
+
+function elodirectory_forms_css_form_alter(&$form, &$form_state, $form_id) {
+	if (!empty($form['#node_edit_form'])) {
+		$module_path = drupal_get_path('module', 'elodirectory_forms_css');
+		drupal_add_css($module_path . '/forms.css', array('group' => CSS_THEME, 'weight' => 10000));
+	}
+}

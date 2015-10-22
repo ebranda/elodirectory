@@ -1,0 +1,32 @@
+name = ELD Omega Subtheme
+description = Omega subtheme for the ELO Directory. This should be the default theme for the Directory.
+base theme = omega
+screenshot = screenshot.png
+engine = phptemplate
+core = 7.x
+
+; ========================================
+; Stylesheets
+; ========================================
+stylesheets[all][] = css/eld-omega.normalize.css
+stylesheets[all][] = css/eld-omega.hacks.css
+stylesheets[all][] = css/eld-omega.styles.css
+stylesheets[all][] = css/eld-omega.no-query.css
+stylesheets[all][] = css/layouts/eld.layout.css
+
+; ========================================
+; Scripts
+; ========================================
+scripts[] = js/eld-omega.behaviors.js
+
+; ========================================
+; Regions
+; ========================================
+regions[header] = Header
+regions[content] = Content (not used)
+regions[content_upper]  = Content upper region
+regions[content_middle] = Content middle region (default)
+regions[content_lower]  = Content lower region
+regions[sidebar_first] = First Sidebar
+regions[sidebar_second] = Second Sidebar
+regions[footer] = Footer

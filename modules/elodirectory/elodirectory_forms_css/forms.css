@@ -1,0 +1,30 @@
+.node-form-has-region-right .form-region-main {
+	width:65%;
+}
+.form-region-right {
+	margin-left:10px;
+}
+
+.form-wrapper .form-item .description {
+	color:#aaa;
+	font-size:0.8em;
+}
+
+.form-item {
+	margin-bottom:3em;
+}
+
+.form-item label {
+	margin-bottom:5px;
+}
+
+input.form-text,
+textarea.form-textarea,
+select.form-select {
+	border:1px solid #999;
+}
+
+.form-item-field-work-language-und select.form-select,
+.form-item-field-resource-language-und select.form-select {
+	height:200px;
+}

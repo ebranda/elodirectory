@@ -1,0 +1,4 @@
+name = ELD CELL Integration
+description = Provides customizations required for CELL project integration
+package = Electronic Literature Organization
+core = 7.x

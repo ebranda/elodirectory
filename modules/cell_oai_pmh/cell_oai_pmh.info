@@ -1,0 +1,7 @@
+name = CELL OAI-PMH
+description = "Extends the Views OAI-PMH module for the CELL project."
+
+package = CELL
+core = 7.x
+
+dependencies[] = views_oai_pmh

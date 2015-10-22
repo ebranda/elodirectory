@@ -1,0 +1,28 @@
+<?php
+
+/**
+ * Implementation of hook_schema()
+ */
+function simplecc_schema() {
+  $schema['simplecc_accept'] = array(
+    'description' => 'records acceptance of license terms by users',
+    'fields' => array(
+      'uid' => array('type' => 'int', 'unsigned' => true, 'not null' => true, 'default' => 0),
+      'nid' => array('type' => 'int', 'unsigned' => true, 'not null' => true, 'default' => 0),
+      'message' => array('type' => 'varchar', 'length' => 255, 'not null' => true, 'default' => ''),
+      'created_at' => array('type' => 'datetime', 'not null' => true),
+    ),
+  );
+  return $schema;
+}
+
+/** 
+ * Implementation of hook_install(). 
+ */ 
+function simplecc_install() {
+	drupal_install_schema('simplecc');
+} 
+
+function simplecc_uninstall() {
+	drupal_uninstall_schema('simplecc');
+}
